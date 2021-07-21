@@ -8,14 +8,14 @@ import (
 
 type FileRead struct {
 	Path    string
-	Current int64
+	Offset  int64
 	File    *os.File
 	Content chan string
 }
 
 func NewFileRead(path string) *FileRead {
 	content := make(chan string)
-	return &FileRead{Path: path, Current: 0, Content: content}
+	return &FileRead{Path: path, Offset: OffsetGet(path), Content: content}
 }
 
 func (fr *FileRead) OpenFile() error {
@@ -28,30 +28,30 @@ func (fr *FileRead) OpenFile() error {
 }
 
 func (fr *FileRead) IsFileRotated() error {
-	if fr.Current == 0 {
+	if fr.Offset == 0 {
 		return nil
 	}
 	if end, err := fr.File.Seek(0, io.SeekEnd); err != nil {
 		return err
 	} else {
-		if fr.Current > end {
-			fr.Current = 0
+		if fr.Offset > end {
+			fr.Offset = 0
 		}
 		return nil
 	}
 }
 
-func (fr *FileRead) SetCurrent() error {
-	if current, err := fr.File.Seek(0, io.SeekCurrent); err != nil {
+func (fr *FileRead) SefOffset() error {
+	if offset, err := fr.File.Seek(0, io.SeekCurrent); err != nil {
 		return err
 	} else {
-		fr.Current = current
-		return nil
+		fr.Offset = offset
+		return OffsetUpdate(fr.Path, offset)
 	}
 }
 
 func (fr *FileRead) Seek() error {
-	_, err := fr.File.Seek(fr.Current, io.SeekStart)
+	_, err := fr.File.Seek(fr.Offset, io.SeekStart)
 	return err
 
 }
@@ -71,12 +71,8 @@ func (fr *FileRead) ReadLine() error {
 	for {
 		data, err := r.ReadBytes('\n')
 		fr.Content <- string(data)
-		if err != nil {
-			if err == io.EOF {
-				return fr.SetCurrent()
-			}
-			return err
+		if err == io.EOF {
+			return fr.SefOffset()
 		}
-		return nil
 	}
 }
