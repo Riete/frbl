@@ -1,4 +1,5 @@
-# File Continue Read By Line When File Is Writing Or File Is Rotated
+tool for continuous reading file by line while file is still writing or is rotated 
+
 ```
 f := NewFileRead("/path/to/file")
 go func(f *FileRead) {
