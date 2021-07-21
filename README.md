@@ -1,4 +1,4 @@
-# Read File By Line With File-Writing
+# File Read By Line With File In Writing Or File Rotated
 ```
 f := NewFileRead("/path/to/file")
 go func(f *FileRead) {

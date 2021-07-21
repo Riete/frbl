@@ -71,11 +71,15 @@ func (fr *FileRead) ReadLine() error {
 	for {
 		data, err := r.ReadBytes('\n')
 		fr.Content <- string(data)
-		if err == io.EOF {
-			if err := fr.SetCurrent(); err != nil {
-				return err
+		if err != nil {
+			if err == io.EOF {
+				if err := fr.SetCurrent(); err != nil {
+					return err
+				}
+				return nil
 			}
-			return nil
+			return err
 		}
+		return nil
 	}
 }
