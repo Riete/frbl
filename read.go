@@ -73,10 +73,7 @@ func (fr *FileRead) ReadLine() error {
 		fr.Content <- string(data)
 		if err != nil {
 			if err == io.EOF {
-				if err := fr.SetCurrent(); err != nil {
-					return err
-				}
-				return nil
+				return fr.SetCurrent()
 			}
 			return err
 		}
