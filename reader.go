@@ -9,6 +9,7 @@ import (
 type FileReader interface {
 	ReadLine() error
 	Content() chan string
+	Close()
 }
 
 type file struct {
@@ -83,4 +84,8 @@ func (f *file) ReadLine() error {
 
 func (f file) Content() chan string {
 	return f.content
+}
+
+func (f *file) Close() {
+	close(f.content)
 }

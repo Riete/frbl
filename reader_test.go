@@ -25,6 +25,7 @@ func Read(f FileReader) {
 
 func TestRead(t *testing.T) {
 	f1 := NewFileReader("a.txt")
+	defer f1.Close()
 	// f2 := NewFileRead("b.txt")
 	go Print(f1)
 	// go Print(f2)
