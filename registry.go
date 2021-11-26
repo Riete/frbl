@@ -7,11 +7,11 @@ import (
 	"sync"
 )
 
-const REGISTRY = "/opt/registry.json"
+const REGISTRY = "/opt/registry-frbl.json"
 
 var mutex sync.Mutex
 
-func OffsetUpdate(path string, offset int64) error {
+func offsetUpdate(path string, offset int64) error {
 	mutex.Lock()
 	defer mutex.Unlock()
 
@@ -45,7 +45,7 @@ func OffsetUpdate(path string, offset int64) error {
 	return err
 }
 
-func OffsetGet(path string) int64 {
+func offsetGet(path string) int64 {
 	f, err := os.Open(REGISTRY)
 	if err != nil {
 		return 0
