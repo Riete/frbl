@@ -75,10 +75,10 @@ func (f *file) ReadLine() error {
 	r := bufio.NewReader(f.file)
 	for {
 		data, err := r.ReadBytes('\n')
+		f.content <- string(data)
 		if err == io.EOF {
 			return f.setOffset()
 		}
-		f.content <- string(data)
 	}
 }
 
