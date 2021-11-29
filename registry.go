@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-const REGISTRY = "/opt/registry-frbl.json"
+const REGISTRY = "/tmp/registry-frbl.json"
 
 var mutex sync.Mutex
 
