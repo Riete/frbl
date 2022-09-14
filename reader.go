@@ -20,42 +20,35 @@ type file struct {
 }
 
 func NewFileReader(path string) FileReader {
-	content := make(chan string)
-	return &file{path: path, offset: offsetGet(path), content: content}
+	return &file{path: path, offset: offsetGet(path), content: make(chan string)}
 }
 
 func (f *file) open() error {
 	var err error
-	if f.file, err = os.Open(f.path); err != nil {
-		return err
-	}
-	return nil
+	f.file, err = os.Open(f.path)
+	return err
 }
 
-func (f *file) forRotated() error {
-	if f.offset == 0 {
-		return nil
-	}
+func (f *file) isRotated() bool {
 	if end, err := f.file.Seek(0, io.SeekEnd); err != nil {
-		return err
+		return false
 	} else {
-		if f.offset > end {
-			f.offset = 0
-		}
-		return nil
+		return f.offset > end
 	}
 }
 
 func (f *file) setOffset() error {
-	if offset, err := f.file.Seek(0, io.SeekCurrent); err != nil {
-		return err
-	} else {
-		f.offset = offset
-		return offsetUpdate(f.path, offset)
+	var err error
+	if f.offset, err = f.file.Seek(0, io.SeekCurrent); err == nil {
+		return offsetUpdate(f.path, f.offset)
 	}
+	return err
 }
 
 func (f *file) seek() error {
+	if f.offset > 0 && f.isRotated() {
+		f.offset = 0
+	}
 	_, err := f.file.Seek(f.offset, io.SeekStart)
 	return err
 
@@ -66,16 +59,13 @@ func (f *file) ReadLine() error {
 		return err
 	}
 	defer f.file.Close()
-	if err := f.forRotated(); err != nil {
-		return err
-	}
 	if err := f.seek(); err != nil {
 		return err
 	}
 	r := bufio.NewReader(f.file)
 	for {
-		data, err := r.ReadBytes('\n')
-		f.content <- string(data)
+		data, err := r.ReadString('\n')
+		f.content <- data
 		if err == io.EOF {
 			return f.setOffset()
 		}

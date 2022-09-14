@@ -11,7 +11,6 @@ go func(f FileReader) {
 for {
 	if err := f.ReadLine(); err != nil {
 		fmt.Println(err)
-		close(f.Content())
 		break
 	}
 	time.Sleep(time.Second)

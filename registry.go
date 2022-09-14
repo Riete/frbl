@@ -9,11 +9,11 @@ import (
 
 const REGISTRY = "/tmp/registry-frbl.json"
 
-var mutex sync.Mutex
+var rw sync.RWMutex
 
 func offsetUpdate(path string, offset int64) error {
-	mutex.Lock()
-	defer mutex.Unlock()
+	rw.Lock()
+	defer rw.Unlock()
 
 	f, err := os.OpenFile(REGISTRY, os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
@@ -27,7 +27,7 @@ func offsetUpdate(path string, offset int64) error {
 	}
 
 	record := make(map[string]int64)
-	if string(data) != "" {
+	if len(data) > 0 {
 		if err := json.Unmarshal(data, &record); err != nil {
 			return err
 		}
@@ -46,6 +46,8 @@ func offsetUpdate(path string, offset int64) error {
 }
 
 func offsetGet(path string) int64 {
+	rw.RLock()
+	defer rw.RUnlock()
 	f, err := os.Open(REGISTRY)
 	if err != nil {
 		return 0
